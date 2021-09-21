@@ -39,7 +39,8 @@ const getComics = async (page) =>  {
 // display images
 // Takes in the array of pages to be displayed
 const displayComics = async (pages) => {
-    const loadedPages = []
+    // const loadedPages = []
+    const promisedPages = []
 
     // Hide all comics and set loader to run
     comicContainers.forEach((comic) => comic.hidden = true)
@@ -47,9 +48,12 @@ const displayComics = async (pages) => {
 
     // loop through array of page numbers & fetch comic data & push to loadedpages array
     for (page of pages) {
-        comicData = await getComics(page)
-        loadedPages.push(comicData)
+        // comicData = await getComics(page)
+        // loadedPages.push(comicData)
+        promisedPages.push(getComics(page))
     }
+
+    const loadedPages = await Promise.all(promisedPages)
 
     // loop through loadedpages array set html elements with respective image/title/alt/pagenum
     for (let i = 0; i < loadedPages.length; i++) {
@@ -193,8 +197,12 @@ const setPageArray = (startNum, n, max) => {
 }
 
 // Get max page
+let maxPage
 const getMaxPage = async () => {
-    const latestPage = await getComics('?comic=latest')
-    const max = latestPage.num
-    return max
+    if (!maxPage) {
+        const latestPage = await getComics('?comic=latest')
+        maxPage = latestPage.num
+    }
+
+    return maxPage
 }
