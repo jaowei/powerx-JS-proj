@@ -88,13 +88,13 @@ randBtn.addEventListener('click', async () => {
 
 // When dropdown to select number of comics to display is changed
 displayOptions.addEventListener('change', (event) => {
-    setPageArray(+event.target.value)
+    setPageArrayLength(+event.target.value)
     displayComics(currentPage)
 })
 
 // When number is selected in number field
 goBtn.addEventListener('click', async () => {
-    value = document.querySelector('.comic-num').value
+    let value = document.querySelector('.comic-num').value
     
     if (value < 0){
         window.alert('Only positive numbers are allowed')
@@ -113,8 +113,7 @@ const setPages = async (pageArr, type, num) => {
     const n = pageArr.length
 
     // Get the latest comic page
-    const latestPage = await getComics('?comic=latest')
-    const max = latestPage.num
+    const max = await getMaxPage()
 
     // starting page num to be set
     let startNum
@@ -146,7 +145,32 @@ const setPages = async (pageArr, type, num) => {
     }
 
     // Once starting number has been determined
-    // Loop to fill in the remaining pages of the page array 
+    setPageArray(startNum, n, max)
+}
+
+// set page array length
+// This function controls the number of comics that is displayed i.e. array length
+// Takes in a number
+const setPageArrayLength = async (numComics) => {
+    const currLen = currentPage.length
+    const diff = currLen - numComics
+    const max = await getMaxPage()
+
+    // If num of comics to display is less than current array
+    if (diff > 0) {
+        for (let i = 0; i < diff; i++) {
+            // Remove pages from end of current array
+            currentPage.pop()
+        }
+    }
+
+    // Populate the page numbers in array
+    setPageArray(currentPage[0], numComics, max)
+}
+
+// Function takes in a starting number, length of array and max number of comics
+// Function contains incrementing logic for setting of page array
+const setPageArray = (startNum, n, max) => {
     for (let i = 0; i < n; i++) {
         // Default add 1 to start number for the length of the array
         currentPage[i] = startNum + i
@@ -168,24 +192,9 @@ const setPages = async (pageArr, type, num) => {
     }
 }
 
-// set page array length
-// This function controls the number of comics that is displayed
-// Takes in a number
-const setPageArray = (numComics) => {
-    const currLen = currentPage.length
-    const diff = numComics - currLen
-
-    if (diff > 0) {
-        // If current array is shorter than the number of comics to display
-        for (let i = 1; i < diff + 1; i++) {
-            // Increment pages by 1 and add to the end of current array
-            currentPage.push(currentPage[currLen - 1] + i)
-        }
-    } else {
-        // If current array is longer than the number of comics to display
-        for (let i = 0; i < -diff; i++) {
-            // Remove pages from end of current array
-            currentPage.pop()
-        }
-    }
+// Get max page
+const getMaxPage = async () => {
+    const latestPage = await getComics('?comic=latest')
+    const max = latestPage.num
+    return max
 }
